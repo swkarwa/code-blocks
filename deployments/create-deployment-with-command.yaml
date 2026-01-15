@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: test
+  name: test
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: test
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test
+    spec:
+      containers:
+        - image: httpd
+          name: httpd
+          command: ["/bin/bash", "-c"] # override the default command
+          args: ["sleep 10; exit 1"] # sleep for 10 seconds then exit with an error
