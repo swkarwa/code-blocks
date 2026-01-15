@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx-ymal
+    method: via-yaml
+    changes: hotfix
+  name: nginx-ymal
+spec:
+  containers:
+  - image: nginx
+    name: nginx-ymal
