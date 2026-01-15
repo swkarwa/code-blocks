@@ -41,3 +41,8 @@ kubectl apply -f <file-path>
 ```
   - this will create a pod, however if there are any changes made to yaml file it will be reflected in a pod
 
+### exec inside a pod
+
+```bash
+kubectl exec pod -it <pod-name> -- <command>
+```

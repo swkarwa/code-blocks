@@ -8,5 +8,5 @@ metadata:
   name: nginx-ymal
 spec:
   containers:
-  - image: nginx
-    name: nginx-ymal
+    - image: nginx
+      name: nginx-ymal
