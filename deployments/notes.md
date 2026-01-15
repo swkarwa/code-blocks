@@ -7,9 +7,9 @@
     - Replicas should be managed only by the Deployment
     - Manually managing ReplicaSets is not recommended, as changes will be reverted
     
-    #### Stretergy:
-        RollingUpdate : this will update pods in batches
-        Recreate: this will kill all pods at once , and create a new for all
+#### Stretergy:
+    RollingUpdate : this will update pods in batches
+    Recreate: this will kill all pods at once , and create a new for all
 
 ### creating a deployment
 
