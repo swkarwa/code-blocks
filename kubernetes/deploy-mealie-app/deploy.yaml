@@ -20,3 +20,4 @@ spec:
         name: mealie-app
         ports:
           - containerPort: 9000  # exposing port
+
