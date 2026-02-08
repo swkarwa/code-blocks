@@ -6,7 +6,7 @@ metadata:
   name: mealie-app
   namespace: mealie
 spec:
-  replicas: 1
+  replicas: 10
   selector:
     matchLabels:
       app: mealie-app

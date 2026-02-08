@@ -16,3 +16,9 @@
 ``` bash
 kubectl create deploy <deployment-name> --image=<image-name> --replicas=<total-replicas>
 ```
+
+### create deployment
+
+```bash
+kubectl create deploy <deployment-name> --image=<image-name> --replicas=<total-replicas> --namespace=<namespace> --dry-run=client -o yaml
+```
