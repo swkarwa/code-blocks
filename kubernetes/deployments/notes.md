@@ -18,7 +18,10 @@ kubectl create deploy <deployment-name> --image=<image-name> --replicas=<total-r
 ```
 
 ### create deployment
-
 ```bash
 kubectl create deploy <deployment-name> --image=<image-name> --replicas=<total-replicas> --namespace=<namespace> --dry-run=client -o yaml
+```
+# create a load balancer
+```bash
+kubectk expose deployment <deployment-name> --port=<service-port> --target-port=<deployment-port> --type=LoadBalancer --dry-run=client -o yaml > mealie-service.yaml
 ```
