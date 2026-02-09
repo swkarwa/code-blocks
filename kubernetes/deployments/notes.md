@@ -25,3 +25,9 @@ kubectl create deploy <deployment-name> --image=<image-name> --replicas=<total-r
 ```bash
 kubectk expose deployment <deployment-name> --port=<service-port> --target-port=<deployment-port> --type=LoadBalancer --dry-run=client -o yaml > mealie-service.yaml
 ```
+
+# change image of deployment
+
+```bash
+    kubectl set image deployment/<deployment-name> container-name=image-name
+```
