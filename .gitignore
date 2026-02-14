@@ -1,0 +1,25 @@
+# Ignore virtual environments anywhere
+**/.venv/
+**/venv/
+**/env/
+
+# Ignore PyCharm / IntelliJ folders anywhere
+**/.idea/
+
+# Ignore Python cache folders anywhere
+**/__pycache__/
+
+# Ignore compiled python files
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Logs
+**/logs/
+**/*.log
+
+# pytest cache
+**/.pytest_cache/
+
+# macOS
+**/.DS_Store
