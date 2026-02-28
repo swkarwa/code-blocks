@@ -31,6 +31,14 @@ npx run playwright <file-name> --project=chromium --headed
 npx run playwright -g 'test-name' --project=chromium --headed
 ```
 
+- run playwright ui
+```code
+npx playwright test --ui
+```
+- run playwright test in debug mode
 
+```code
+npx playwright test --project=chromium --debug
+```
 
 
