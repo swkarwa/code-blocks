@@ -51,3 +51,4 @@ function getProfit(movie: Movie): number {
 }
 
 
+console.log(getProfit(dune))
