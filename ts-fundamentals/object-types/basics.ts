@@ -284,6 +284,54 @@ const p: DescribePerson = {
 
 displayPerson(p)
 
+
+/**
+ * =========================================================
+ * 10. Read only
+ * =========================================================
+ */
+
+type User = {
+    readonly id: number,
+    first: string
+    last: string
+}
+
+type CreateUser = {
+    first: string,
+    last: string
+}
+
+function getUser(person: CreateUser): User {
+    return { id: Math.random(), first: 'swapnil', last: 'karwa' }
+}
+
+
+const result = getUser({ first: 'swapnil', last: 'karwa' })
+console.log(result)
+
+/**
+ * =========================================================
+ * 11. Intersection Types
+ * =========================================================
+ */
+
+type Circle = {
+    radius: number
+}
+type ColorFull = {
+    color: string
+}
+type ColorfullCricle = Circle & ColorFull // combined types
+type ColorFullCircleWithDia = Circle & ColorFull & {
+    dia: number
+}
+
+// passing multiple types
+const coloredCircle = (circle: ColorfullCricle | ColorFullCircleWithDia) => { console.log(circle) }
+coloredCircle({ radius: Math.random(), color: 'red' })
+coloredCircle({ radius: Math.random(), color: 'blue', dia: 200 })
+
 /**
  * =========================================================
  * Summary
@@ -298,6 +346,7 @@ displayPerson(p)
  * 7. Index Signatures
  * 8. Optional Properties
  * 9. Nested Object types
+ * 10. ReadOnly Modifier
  *
  * These are fundamental concepts of TypeScript objects.
  */
