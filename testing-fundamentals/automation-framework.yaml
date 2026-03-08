@@ -1,0 +1,33 @@
+step1:
+  creates env file:
+    env file contains : 
+      1. name of application by which app should be registered to controller
+      2. x-api-key used by otel collector
+      3. controller details  on which controller, app should be registered
+
+step2:
+  create a otel collector file:
+    1. otel collector file is created via bash script from a collector template file
+    2. values are to be collected from env variables
+
+step3:
+   create tesst applications:
+    1. test applications are spun in containers, to which otel agent is attached 
+    2. otel agents sends data otel collectors, created in step 2 and otel collector passes on data to kenesis stream
+    3. applications are built in pythoon/flask or springboot
+
+# Auto mation frame work starts from here
+step4:
+  @befroresuite:
+    init client classes, and controller class, request dispatcher class to fetch data from controller to assert
+    
+  @beforeTest
+  generate traffic on applicaton:
+    1. traffic is generated on application such that, there is enough data on controller to verify to
+    2. note data is verified from controller side and not directly from kenesis stream, as kenesis stream uses proto buff for data sanitizations
+    not json
+
+step 5:
+  1. tests-verification :
+    - verify registering of app , tiers , nodes , business transaction , snapshots , metrics , flowmap , errors if there are any
+

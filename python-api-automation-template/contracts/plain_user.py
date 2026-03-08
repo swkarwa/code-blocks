@@ -1,7 +1,9 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+from dataclasses import dataclass , asdict
 
 
+@dataclass
 class CreateUserRequest(BaseModel):
     name: str = Field(..., min_length=2)
     email: EmailStr

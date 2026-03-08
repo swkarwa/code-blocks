@@ -1,0 +1,37 @@
+test-automation-folder-structure:
+
+    main:
+        app:
+            contains app jars , docker-compose to spin apps , and template files to create otel collector
+        clients:
+            ControllerClient
+                has referenbce to BTClient,SnapshoptClient
+                calls methods from respective client
+                json data is converted to POJO classes, and passed on to verification methods
+            RequestDispatcher(which has controllerclient reference)
+            BusinessTransactionClient
+                methods prepares request data, and passes on to request dispatcher, which eventually returns data in JSON format
+            SnapshotClient
+        contracts:
+            request classes:
+            response classes:
+        utils:
+            AppInitializer:
+                creates env variables and store it in .env file
+        reporting:
+            - we use a interal plugin, which store test results in file called test-mapping.json
+            - test-mapping.json have jira-ids as test with statuses , and failure and skip reasons 
+            - these data is consumed by zephyre test cyles by jira cloud to maintain regression
+            - and we have internal testscore app, which syncs with zephyre test cycles every 3 hours
+        .env
+
+    tests:
+        base:
+            test base class
+                beforesuite:
+                    init clients by reading values from .env folder
+                before test:
+                    generate traffic on appliction, which is spinned
+            test classes:
+                class method of controller clients, to verfiy data
+

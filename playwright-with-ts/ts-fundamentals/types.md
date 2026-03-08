@@ -1,0 +1,4 @@
+- type script is static error checker, i.e before code runs 
+- TS is compiled to JS
+- any JS syntax is 100% valid TS
+- helps find errros before any of code runs

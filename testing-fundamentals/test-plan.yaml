@@ -1,0 +1,114 @@
+testplan:
+  feature:
+    name:
+    description:
+
+  scope:
+    - scope-in:
+        - functional tests
+        - security tests
+        - performace tests
+        - security tests
+        - ui tests
+        - automation of tests for faster feedback
+        - regression tests for impacted features
+
+    - out of scope:
+        - regression for not impacted features
+        - testing of 3rd party services if integrated
+
+  risk analysis:
+    - failure in primary layer(API Tests): high
+    - auth failure: high
+    - ui failure: medium
+    - 3rd party service unavailablity: medium
+
+  test-stratergy:
+    - unit tests:
+        - dev responsibility
+        - logic verification
+        - error messages
+        - code coverage
+
+    - api tests (primary layer):
+        - response status codes
+        - request contract checks
+        - response contract checks
+        - +ve & -ve cases
+        - headers and query params
+
+    - negative cases:
+        - invalid contracts
+        - expired tokens
+        - blank data sets
+        - data mocking
+
+    - security cases:
+        - tampered tokens
+        - brute force methods
+        - auth bypassing
+
+    - performace cases:
+        - rate limiting / throttling
+        - larger input size
+
+    - integration tests:
+        - service to sevice communication within network
+        - 3rd party service integrations
+
+    - ui cases:
+        - cx critical flows
+        - e2e flow from UI
+        - UI/component validation
+
+    - env details:
+        - env details: ["dev", "staging", "prod-like", "prod1", "prod2"]
+
+    - test coverage:
+        - all test coverage by RTM
+
+    - test data stratergy:
+        - no static data
+        - unique data set for each tests
+        - boudry value analysis if applicable
+
+  automation stratergy:
+    - tools:
+        ui: playwirght
+        api: requests-module
+        ci/cd: teamcity/jenkins
+        programming language: TS/java/python
+        source-code-management: github/gitlab/bitbucket
+
+    - coverage: 70-80% using automation
+
+    - metric to track:
+        - passing rate
+        - failure rate
+        - flaky tests rate
+        - bug leakage
+
+    - haneling flaky tests:
+        - no static waits
+        - dynamic waits only
+        - mocking data, if required
+        - verification of 3rd party service availablity if it is integrated before performing tests
+        - qurantine falky tests, in diff branches for better fixing
+
+  entry/exit criteria:
+    - entry:
+        - env radiness
+        - reqirement finalized
+        - ci/cd set up for automation
+
+    - exit:
+        - no open bugs
+        - green regression
+        - all functional/non-functional coverage
+
+email MFA:
+  functional: ["enable/disable MFA", "correct otp", "expired otp", "resend otp"]
+  security: ["incorrect otp format", "tampered otp"]
+  negative: ["reusing same otp", otp sent to email service which is down]
+  performace: ["delayed otp delievry of otp"]
+  ui: ["MFA prompt", "error messages", "ui/component validation"]

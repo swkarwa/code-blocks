@@ -1,0 +1,36 @@
+feature:
+  onboarding controller to otel env:
+    onboarding -api-gateway
+    1. onboarding to be performed by internal appd user, or support team by setting feature flags from controller admin, which triggers subscribe event
+    global endpoint (lambda)
+    2. subscribe event, this is an API gateway, which checks x-api key from features flag and routes requests to global endpoint lambda
+    global endpoint (lambda)
+    RSS (reporter service status) is a lambda
+    3. global endpoint lamda triggers RSS (reporter service status) of each region where kenesis stream is deployed
+    4. RSS it does 3 things
+      1. it creates a record in dynamo db which controller is onboarded (dynamo db)
+      2. stores a secret in secret key, which points to controller record in dynamo db (store record key in secret manager)
+      (open telemetry API gateway)
+      3. creates a hash from controller details and store it in otel api-gateway, this hash is used by cx as api-key in otel collector file
+
+  registering metrics to controller:
+    1. MELT data is passed from otel agent to kensis stream via otel collector, where otel collector file has an x-api-key which is stored in otel-api-gateway, while performing onboarding
+    2. metric is passed to data sanitizing service
+       1. it reconstructs MELT data into a BT , snapshot , flowmap , segregate metrics for each BT
+    3. this reconstructed data is sent on two places, snapshots to snapshots service, and metrics BT and flowmap data to metrics service, these are components of CRS(Controller reporter service)
+       1. CRS routes spans to DMS (data manager service) , which tries to fetch controller details from cache
+          if available in cache : it registers data to controller
+          if not:
+            request is routed to secrect service , which fetches the secret which are stored at time of on-boarding, which contains 
+            controller details
+            once we have controller details
+            1. it registers metric to controller and store controller details in cache paralley
+            to save time in fetching controller details for future metric registeration
+
+phase 1:
+
+onboarding-service -> global endpoint lmabda -> request service status lambda -> dynamo db | secret manager | api key in otel api gateway
+
+phase 2:
+otel api gateway  -> validator service -> Kenesis stream -> metrice service (component of controller reporter service)  | snapshot service ->
+(DMS) -> data manager service -> secret service | controller registeration service
