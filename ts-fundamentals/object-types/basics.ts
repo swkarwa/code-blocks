@@ -241,6 +241,48 @@ printCoordinates({ x: 100, y: 100, z: 200 })
 // printCoordinates({ x: 100, y: 100, z: 200, m: 100 })
 
 
+/**
+ * =========================================================
+ * 9. Nested Object
+ * =========================================================
+ */
+
+type P = {
+    first: string, last: string
+}
+type ParentName = {
+    father: P
+    mother: P
+}
+type DescribePerson = {
+    name: string
+    age: number
+    parentNames: ParentName
+}
+
+const displayPerson = (person: DescribePerson) => {
+
+    const pJson = JSON.stringify(person, null, 2)
+    console.log(pJson)
+    console.log(`---------------------------`)
+    console.log(person)
+
+}
+
+const p: DescribePerson = {
+    name: 'swapnil',
+    age: 34,
+    parentNames: {
+        father: {
+            first: 'subhash', last: 'karwa'
+        },
+        mother: {
+            first: 'sushma', last: 'karwa'
+        }
+    }
+}
+
+displayPerson(p)
 
 /**
  * =========================================================
@@ -255,6 +297,7 @@ printCoordinates({ x: 100, y: 100, z: 200 })
  * 6. Excess Property Checking
  * 7. Index Signatures
  * 8. Optional Properties
+ * 9. Nested Object types
  *
  * These are fundamental concepts of TypeScript objects.
  */
