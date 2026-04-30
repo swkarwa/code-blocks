@@ -31,10 +31,16 @@ function getTotal(products: Product[]): number {
     return products.reduce((total, product) => { return total + product.price }, 0)
 }
 
-const result = getTotal([{
-    name: 'coffee', price: 10
-}, {
-    name: 'tea', price: 5
-}])
+const result = getTotal([
+    {
+        name: 'coffee', price: 10
+    },
+    {
+        name: 'tea', price: 5
+    },
+    {
+        name: 'pizza', price: 15
+    }
+])
 
 console.log(`total of all products is : ${result}`)
