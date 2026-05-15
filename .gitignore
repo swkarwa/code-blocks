@@ -22,6 +22,8 @@
 **/.pytest_cache/
 
 # macOS
-**/.DS_Store./aws/keys.yaml
+**/.DS_Store/*
 ./aws/keys.yaml
 .history/
+.DS_Store
+
