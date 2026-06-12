@@ -1,0 +1,25 @@
+---
+- name: test anisble on current instances
+  hosts: all
+  gather_facts: false
+
+  vars:
+    ansible_host: 10.115.85.242
+    ansible_user: appduser
+    ansible_password: Ciscovapwd123#
+    ansible_connection: ssh
+    ansible_ssh_common_args: >
+      -o StrictHostKeyChecking=no
+      -o ProxyJump=sec-bastion-us-west-2.ops.appdynamics.com
+
+  tasks:
+    - name: Check connection
+      ping:
+
+    - name: Run hostname command
+      shell: hostname
+      register: output
+
+    - name: Print hostname
+      debug:
+        var: output.stdout
