@@ -10,8 +10,8 @@ def test_subtract(request):
     assert 2-2 == 0
 
 @pytest.mark.smoke
-def test_login(request):
-    logger.info("performing login")
+def test_login(request,log):
+    log.info("performing login")
 
 def test_logout(request):
     print("\nperforming logout...")
