@@ -20,6 +20,7 @@
 
 # pytest cache
 **/.pytest_cache/
+**/__pycache__
 
 # macOS
 **/.DS_Store/*
