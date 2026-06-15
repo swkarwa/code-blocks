@@ -1,59 +1,15 @@
 {
-    "generated_at": "2026-06-14T19:46:58.723064",
-    "environment": "qa",
-    "total_tests": 10,
-    "passed": 2,
-    "failed": 1,
-    "skipped": 1,
+    "generated_at": "2026-06-14T21:14:54.088921",
+    "environment": "staging",
+    "total_tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
     "tests": [
         {
-            "node_id": "tests/test_options/test_status.py::TestStatus::test_skip",
-            "status": "skipped"
-        },
-        {
-            "nodeid": "tests/test_options/test_status.py::TestStatus::test_pass2",
+            "nodeid": "tests/skip_and_xfail_test.py::test_linux",
             "status": "passed",
-            "duration": 7.149999146349728e-05
-        },
-        {
-            "nodeid": "tests/test_options/test_status.py::TestStatus::test_pass",
-            "status": "passed",
-            "duration": 7.016700692474842e-05
-        },
-        {
-            "nodeid": "tests/test_options/test_status.py::TestStatus::test_xfail",
-            "status": "xfailed",
-            "duration": 0.00014983300934545696
-        },
-        {
-            "nodeid": "tests/test_options/test_status.py::TestStatus::test_fail",
-            "status": "rerun",
-            "duration": 0.00010966698755510151
-        },
-        {
-            "nodeid": "tests/test_options/test_status.py::TestStatus::test_fail",
-            "status": "rerun",
-            "duration": 5.5750017054378986e-05
-        },
-        {
-            "nodeid": "tests/test_options/test_status.py::TestStatus::test_fail",
-            "status": "rerun",
-            "duration": 4.258399712853134e-05
-        },
-        {
-            "nodeid": "tests/test_options/test_status.py::TestStatus::test_fail",
-            "status": "rerun",
-            "duration": 4.1624996811151505e-05
-        },
-        {
-            "nodeid": "tests/test_options/test_status.py::TestStatus::test_fail",
-            "status": "rerun",
-            "duration": 3.891700180247426e-05
-        },
-        {
-            "nodeid": "tests/test_options/test_status.py::TestStatus::test_fail",
-            "status": "failed",
-            "duration": 3.774999640882015e-05
+            "duration": 0.0001144580019172281
         }
     ]
 }
