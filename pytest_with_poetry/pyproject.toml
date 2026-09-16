@@ -1,0 +1,21 @@
+[project]
+name = "py-test"
+version = "0.1.0"
+description = "lean pytest with poetry"
+authors = [
+    {name = "hey.karwa@gmail.com"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pytest" ,
+    "requests"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["*.py"]

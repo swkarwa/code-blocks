@@ -1,0 +1,104 @@
+{
+    "result": [
+        {
+            "test_method_name": "test_one",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_one",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_two",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_two",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_three",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_three",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c1_one",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c1_one",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c1_two",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c1_two",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c1_three",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c1_three",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c2_one",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c2_one",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c2_two",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c2_two",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c3_three",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_c3_three",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_fixture",
+            "status": "passed",
+            "error": null
+        },
+        {
+            "test_method_name": "test_fixture",
+            "status": "passed",
+            "error": null
+        }
+    ]
+}
