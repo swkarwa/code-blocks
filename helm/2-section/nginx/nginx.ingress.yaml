@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: nginx.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-svc
+                port:
+                  number: 8080
+
+---
+
+
+# kubectl create ingress nginx-ingress \                                                                                                               ─╯
+#   --class=nginx \
+#   --rule="nginx.local/=nginx-svc:8080" \
+#   --dry-run=client \
+#   -o yaml

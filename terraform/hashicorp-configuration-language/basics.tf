@@ -1,14 +1,14 @@
 terraform {
-    required_providers {
-        github = {
-            source = "integrations/github"
-        }
+  required_providers {
+    github = {
+      source = "integrations/github"
     }
+  }
 }
 
-variable github_token {
-    type = string
-    sensitive = true
+variable "github_token" {
+  type      = string
+  sensitive = true
 }
 
 provider "github" {
@@ -18,5 +18,5 @@ provider "github" {
 resource "github_repository" "production-repo" {
   name        = "terraform-repo"
   description = "repo created by terraform script"
-  private     = true
+  visibility  = "private"
 }

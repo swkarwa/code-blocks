@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Kubernetes Services &amp; Ingress — Reference Notes</title>
+<style>
+  body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: #1a1a1a; line-height: 1.5; max-width: 900px; margin: 0 auto; padding: 30px; font-size: 13px; }
+  h1 { font-size: 24px; border-bottom: 3px solid #2563eb; padding-bottom: 8px; }
+  h2 { font-size: 18px; color: #2563eb; margin-top: 32px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  h3 { font-size: 14.5px; color: #1e40af; margin-top: 20px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 12px; }
+  th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #eef2ff; }
+  code { background: #f3f4f6; padding: 1px 5px; border-radius: 3px; font-size: 12px; font-family: "SF Mono", Menlo, monospace; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 11.5px; line-height: 1.4; }
+  pre code { background: none; color: inherit; padding: 0; }
+  .note { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 8px 12px; margin: 10px 0; font-size: 12px; }
+  .diagram { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 16px; font-family: "SF Mono", Menlo, monospace; font-size: 11.5px; white-space: pre; }
+  ul, ol { margin: 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+</style>
+</head>
+<body>
+
+<h1>Kubernetes Services &amp; Ingress — Reference Notes</h1>
+<p>Personal study notes — built hands-on with Minikube (Docker driver) on macOS, cross-checked against Docker Desktop Kubernetes.</p>
+
+<h2>1. Core building blocks</h2>
+<table>
+<tr><th>Object</th><th>Purpose</th><th>Self-healing?</th></tr>
+<tr><td>Pod</td><td>Smallest deployable unit — one or more containers</td><td>No</td></tr>
+<tr><td>ReplicaSet</td><td>Keeps N copies of a Pod template running</td><td>Yes (via reconcile loop)</td></tr>
+<tr><td>Deployment</td><td>Manages ReplicaSets, adds rolling updates/rollback</td><td>Yes — the one you use day to day</td></tr>
+</table>
+<p><strong>Chain:</strong> Deployment → creates ReplicaSet (using <code>selector</code> + <code>template</code>) → ReplicaSet creates Pods → keeps count at <code>replicas</code>.</p>
+
+<h3>Generate manifests via CLI (don't hand-write from scratch)</h3>
+<pre><code>kubectl run nginx-pod --image=nginx --dry-run=client -o yaml > pod.yaml
+
+kubectl create deployment nginx-deploy --image=nginx --replicas=3 \
+  --dry-run=client -o yaml > deploy.yaml
+
+kubectl apply -f pod.yaml
+kubectl apply -f deploy.yaml
+kubectl get pods,rs,deploy -o wide</code></pre>
+
+<h3>Deployment YAML anatomy</h3>
+<pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deploy
+spec:
+  replicas: 3                     # "create N copies"
+  selector:
+    matchLabels:
+      app: nginx-deploy           # QUERY: "find pods with this label"
+  template:                       # a full Pod spec, embedded
+    metadata:
+      labels:
+        app: nginx-deploy         # STAMP: label put on every pod created
+    spec:
+      containers:
+      - image: nginx
+        name: nginx</code></pre>
+<div class="note">
+<code>selector</code> and <code>template.metadata.labels</code> must match — if they don't, <code>kubectl apply</code> rejects the Deployment outright.
+Kubernetes also auto-adds a <code>pod-template-hash</code> label on top of your own label, so rolling updates can distinguish "old version" pods from "new version" pods (each version gets its own ReplicaSet).
+</div>
+
+<h3>Proving self-healing</h3>
+<pre><code>kubectl delete pod &lt;one-of-the-three-pods&gt;
+kubectl get pods -o wide   # a brand-new pod appears, new name + new IP, count back to 3</code></pre>
+<p>A bare Pod (no controller) does <strong>not</strong> come back if deleted — only ReplicaSet/Deployment-managed pods self-heal.</p>
+
+<h2>2. Service IP types</h2>
+<table>
+<tr><th>Type</th><th>What it is</th><th>EXTERNAL-IP</th><th>Reachable from</th></tr>
+<tr><td>ClusterIP (default)</td><td>Stable virtual IP for a Service</td><td>&lt;none&gt;</td><td>Inside cluster only</td></tr>
+<tr><td>NodePort</td><td>ClusterIP + a port (30000-32767) opened on every node's IP</td><td>&lt;none&gt;</td><td>Anyone reaching a node IP</td></tr>
+<tr><td>LoadBalancer</td><td>NodePort + cloud provider assigns a real external IP</td><td>real IP (cloud) / faked locally</td><td>Public internet (real cloud)</td></tr>
+<tr><td>ExternalName</td><td>Pure DNS CNAME, no IP, no selector, no pods</td><td>n/a</td><td>Just a DNS redirect to an external host</td></tr>
+</table>
+
+<h3>Why Services exist at all</h3>
+<p>Pod IPs change every time a pod is recreated (self-healing, rolling update, etc). A Service gives a stable IP/DNS name that always routes to whichever pods currently match its label <code>selector</code> — same wiring mechanism as Deployment → ReplicaSet → Pod, just applied to Service → Pod.</p>
+
+<h3>port vs targetPort vs nodePort</h3>
+<div class="diagram">client --curl on nodePort or LB port--> [ Service ] --forwards to targetPort--> [ Pod's container port ]</div>
+<ul>
+<li><code>port</code> — the port the <strong>Service itself</strong> listens on, inside the cluster (ClusterIP address book entry).</li>
+<li><code>targetPort</code> — the port on the <strong>actual container</strong> traffic gets forwarded to. Must match what the process really listens on — if wrong, you get <code>Connection reset by peer</code>, not a helpful error.</li>
+<li><code>nodePort</code> — an extra doorway opened on <strong>every node's own IP</strong> (not "the cluster" abstractly), only for NodePort/LoadBalancer types. Same port is open identically on every node, even ones with no matching pods.</li>
+</ul>
+<pre><code>NAME             TYPE        PORT(S)
+nginx-nodeport   NodePort    80:30740/TCP
+                              ^   ^
+                           port  nodePort  (targetPort=80 too, hidden since it equals port here)</code></pre>
+
+<h3>Creating each type</h3>
+<pre><code># ClusterIP (default — omit --type)
+kubectl expose deployment nginx-deploy --port=80 --target-port=80
+
+# NodePort
+kubectl expose deployment nginx-deploy --port=80 --target-port=80 \
+  --type=NodePort --name=nginx-nodeport
+
+# LoadBalancer
+kubectl expose deployment nginx-deploy --port=80 --type=LoadBalancer --name=nginx-lb</code></pre>
+
+<h2>3. Accessing each type locally — the messy part</h2>
+<p>This differs a lot by local tool, and mismatching them is a common source of confusion.</p>
+
+<h3>Minikube (Docker driver on macOS)</h3>
+<table>
+<tr><th>Type</th><th>How to actually reach it</th></tr>
+<tr><td>ClusterIP</td><td>Only from inside the cluster: <code>kubectl run tmp --rm -it --image=busybox --restart=Never -- sh</code> then <code>wget -O- &lt;clusterIP&gt;</code> or <code>wget -O- &lt;svc-dns-name&gt;</code></td></tr>
+<tr><td>NodePort</td><td><code>minikube ip</code> is <strong>not directly reachable</strong> from macOS host on Docker driver — use <code>minikube service &lt;name&gt; --url</code> instead, which prints a tunneled <code>127.0.0.1:PORT</code> URL</td></tr>
+<tr><td>LoadBalancer</td><td>Stays <code>&lt;pending&gt;</code> forever without help. Run <code>sudo minikube tunnel</code> in a separate terminal (keep it open) — it assigns a real routable IP (often <code>127.0.0.1</code>) and forwards traffic</td></tr>
+<tr><td>Any type — universal fallback</td><td><code>kubectl port-forward svc/&lt;name&gt; 8081:80</code> then <code>curl localhost:8081</code>. Works regardless of driver/tool quirks.</td></tr>
+</table>
+<div class="note"><strong>Gotcha proven hands-on:</strong> if <code>minikube tunnel</code> is already bound to port 80 for one LoadBalancer service (e.g. <code>nginx-lb</code>), a second thing wanting port 80 (like the ingress controller) can silently lose that port — requests land on the wrong backend with no obvious error, just a confusing wrong response. Delete unused LoadBalancer services when debugging routing.</div>
+<p><code>minikube service</code> / <code>minikube tunnel</code> always target the Minikube profile directly — they ignore your current <code>kubectl</code> context entirely.</p>
+
+<h3>Docker Desktop Kubernetes</h3>
+<table>
+<tr><th>Type</th><th>How to actually reach it</th></tr>
+<tr><td>LoadBalancer</td><td>Docker Desktop ships its own built-in LB controller: assigns a Docker-internal IP (e.g. <code>172.18.0.5</code>, <strong>not</strong> reachable directly from the Mac) <em>and separately</em> auto-forwards that port straight to <code>localhost</code>. So just <code>curl localhost:&lt;port&gt;</code> works, no tunnel.</td></tr>
+<tr><td>NodePort (plain)</td><td>No automatic forwarding — the node's internal IP (e.g. <code>172.18.0.4</code>) is unreachable from the host, same as Minikube's problem. Use <code>kubectl port-forward</code> instead.</td></tr>
+</table>
+<div class="note">Verified by testing: <code>curl 172.18.0.5:80</code> (LB's own "external" IP) hangs even on Docker Desktop — only the <code>localhost</code> auto-forward works. Don't assume "Docker Desktop forwards everything to localhost" — it only does this specifically for LoadBalancer-type Services.</div>
+
+<h3>Real cloud clusters (GKE/EKS/AKS)</h3>
+<p><code>EXTERNAL-IP</code> is a genuinely public, routable IP from a real cloud load balancer — curl it directly, no tunnel/port-forward/localhost tricks needed.</p>
+
+<h2>4. Ingress</h2>
+<h3>Why it exists</h3>
+<p>Without Ingress: every externally-facing app needs its own NodePort (random ugly port) or its own LoadBalancer (a whole separate IP/cost in real cloud). With 10 apps that's 10 ports or 10 IPs to manage.</p>
+<p>Ingress: <strong>one</strong> entry point (one controller, one IP), with routing rules based on <strong>path</strong> or <strong>hostname</strong> deciding which internal ClusterIP Service receives the traffic.</p>
+<div class="note">Ingress is <strong>only routing rules</strong> — it does nothing by itself. You need an <strong>Ingress Controller</strong> (real running software, e.g. nginx-ingress) installed to actually read and enforce those rules.</div>
+
+<h3>Enable on Minikube</h3>
+<pre><code>minikube addons enable ingress
+kubectl get pods -n ingress-nginx
+kubectl get svc -n ingress-nginx   # controller Service is type NodePort on Minikube</code></pre>
+<p>Controller lives in its own <code>ingress-nginx</code> namespace — it's cluster-wide infrastructure, not tied to one app.</p>
+
+<div class="note">
+<strong>Ingress rules point at Service <em>names</em>, never at IPs.</strong> In <code>--rule="/nginx=nginx-clusterip:80"</code>, <code>nginx-clusterip</code> must exactly match an existing Service's <code>metadata.name</code> in the same namespace — it is not an IP you supply.<br><br>
+Chain: <code>Ingress rule → Service NAME + port → Kubernetes resolves the Service's Endpoints → real Pod IPs</code>. This is visible in <code>kubectl describe ingress</code> output: <code>nginx-clusterip:80 (10.244.0.23:80,10.244.0.22:80,...)</code> — the name you typed on the left, the Pod IPs Kubernetes resolved it to on the right, in parentheses. A typo'd or missing Service name still lets the Ingress get created, but that path resolves to nothing when traffic hits it.
+</div>
+
+<h3>Path-based routing</h3>
+<pre><code>apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /nginx
+        pathType: Prefix
+        backend:
+          service: { name: nginx-clusterip, port: { number: 80 } }
+      - path: /hello
+        pathType: Prefix
+        backend:
+          service: { name: hello-clusterip, port: { number: 80 } }</code></pre>
+<div class="note">
+<strong>Critical gotcha, proven hands-on:</strong> Ingress does <strong>not</strong> strip the matched path before forwarding to the backend by default. A request to <code>/nginx</code> is forwarded to the backend pod as literally <code>/nginx</code> — if the pod only serves <code>/</code>, you get a 404 <em>from the backend itself</em> (note: the 404 page shows the backend's own server version, e.g. <code>nginx/1.31.6</code> — proof the routing worked, just the path was wrong).<br><br>
+Fix: add annotation <code>nginx.ingress.kubernetes.io/rewrite-target: /</code> and use <code>pathType: Prefix</code> (not <code>Exact</code> — Exact requires character-for-character match, no trailing-slash flexibility).
+</div>
+<pre><code>kubectl create ingress demo-ingress \
+  --rule="/nginx=nginx-clusterip:80" \
+  --rule="/hello=hello-clusterip:80" \
+  --dry-run=client -o yaml > ingress.yaml
+# then add the rewrite-target annotation manually, apply
+kubectl apply -f ingress.yaml</code></pre>
+
+<h3>Host-based routing</h3>
+<pre><code>kubectl create ingress host-ingress \
+  --rule="nginx.local/*=nginx-clusterip:80" \
+  --rule="hello.local/*=hello-clusterip:80" \
+  --dry-run=client -o yaml > host-ingress.yaml</code></pre>
+<p>Generated rule structure gains a <code>host:</code> field as a sibling of <code>http:</code> — this is what lets the exact same IP/port serve completely different backends based on the incoming <code>Host</code> HTTP header.</p>
+<p>Since <code>nginx.local</code>/<code>hello.local</code> aren't real DNS names, map them locally in <code>/etc/hosts</code> (checked before any real DNS lookup):</p>
+<pre><code>sudo nano /etc/hosts
+# add:
+127.0.0.1 nginx.local hello.local</code></pre>
+<pre><code>curl http://nginx.local/
+curl http://hello.local/</code></pre>
+
+<h3>Full request path — the piece that resolves "how does this reach a ClusterIP that's normally unreachable"</h3>
+<div class="diagram">Your Mac (curl http://nginx.local/)
+   |
+   v
+127.0.0.1:80        <-- /etc/hosts maps nginx.local -> 127.0.0.1
+   |
+   v
+minikube tunnel     <-- process actually listening on 127.0.0.1:80,
+   |                    forwards into the Minikube VM's network
+   v
+ingress-nginx-controller Service (NodePort, ns: ingress-nginx)
+   |
+   v
+ingress-nginx-controller POD  <-- reads Ingress rules, inspects
+   |                                Host header / path, decides target
+   v
+nginx-clusterip Service (ClusterIP)  <-- reached from INSIDE the cluster,
+   |                                     by the controller pod -- never from your Mac
+   v
+nginx-clusterip Pod                 <-- final destination</div>
+<p><strong>Key insight:</strong> your Mac only ever talks to one thing — the ingress controller's entry point. The controller pod runs <em>inside</em> the cluster, so its calls to ClusterIP Services are normal internal traffic. This is the entire value of Ingress: one external bridge point for many internal Services, instead of NodePort/LoadBalancer per app.</p>
+
+<h2>5. Debugging habits picked up along the way</h2>
+<ul>
+<li><strong>Always check <code>kubectl config current-context</code></strong> before assuming "my resource is missing" — <code>docker-desktop</code>, <code>minikube</code>, and any real cluster are completely separate state. Empty <code>kubectl get svc</code> often means wrong context/namespace, not a real problem.</li>
+<li><strong><code>metadata.name</code> is immutable</strong> — <code>kubectl edit</code> to rename an object fails outright ("At least one of apiVersion, kind and name was changed"). To rename: <code>kubectl delete</code> the old object, then <code>kubectl apply</code> a manifest with the new name (the ReplicaSet's <code>pod-template-hash</code> can end up identical if the pod template content is unchanged, since the hash is content-based, not time-based).</li>
+<li><strong>Filename ≠ object identity</strong> — Kubernetes only reads <code>metadata.name</code> inside the file; a file called <code>nginx-deploy.yaml</code> can quietly contain <code>name: nginx-clusterip</code> after an edit, causing confusing <code>kubectl apply -f .</code> output later. Keep filenames in sync with the object name inside.</li>
+<li><strong><code>kubectl apply -f .</code> applies every YAML in the directory</strong> — safe only if you know exactly what's in there; stray/experimental files get silently (re)applied too.</li>
+<li><strong>Port already in use locally</strong> (e.g. <code>kubectl port-forward</code> failing on 8080) — check with <code>lsof -i :8080</code> before killing anything, to see what's actually holding it.</li>
+<li><strong>Two Services fighting over the same external port</strong> (e.g. two <code>LoadBalancer</code>-type Services both wanting port 80 via <code>minikube tunnel</code>) causes traffic to silently land on the wrong backend — always check for this when a Service returns unexpected content.</li>
+<li><strong><code>kubectl describe ingress &lt;name&gt;</code></strong> shows resolved backend Pod IPs per rule — proves whether Ingress is actually matching/routing correctly, independent of whatever the final HTTP response looks like.</li>
+</ul>
+
+</body>
+</html>
