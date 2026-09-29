@@ -1,0 +1,1 @@
+kubectl set env deployment/<deployment-name> --from=configmap/<config-map-name>

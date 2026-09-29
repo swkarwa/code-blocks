@@ -1,0 +1,6 @@
+dependencies:
+- name: child
+  repository: file://../child
+  version: 0.1.0
+digest: sha256:ee48c12074fbc21b69aa84632ae2bde1133081b28970c84b61eea8c185e18730
+generated: "2026-09-28T22:58:45.23694+05:30"

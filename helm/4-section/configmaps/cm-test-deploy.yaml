@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cm-test-deploy
+  name: cm-test-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cm-test-deploy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: cm-test-deploy
+    spec:
+      containers:
+      - command:
+        - sh
+        - -c
+        - sleep 3600
+        image: busybox
+        name: busybox
+        resources: {}
+status: {}

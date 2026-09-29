@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  fruits: |
+    {{- range .Values.fruits }}
+      {{- if eq $.Values.company "Acme" }}
+        - {{ .name }} ({{ .color }}) owned by {{ $.Values.company }}
+      {{- end }}
+    {{- end }}
+kind: ConfigMap
+metadata:
+  name: list-fruits

@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  message: |
+    {{ include "tiny.greeting" .Values.first_name }}
+    {{ include "tiny.greeting.dict" (dict "name" "Swapnil" "company" .Values.company)}}
+kind: ConfigMap
+metadata:
+  name: greeting
