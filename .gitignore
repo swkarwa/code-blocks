@@ -28,3 +28,8 @@
 .history/
 .DS_Store
 
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
